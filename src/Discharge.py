@@ -16,7 +16,7 @@ class Units(object):
     def gravity():
         return 32.2
 
-class Orifice():
+
 class Orifice(object):
     """ 
     Init_Property:  Units
