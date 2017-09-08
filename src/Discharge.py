@@ -12,11 +12,12 @@ Goals:
 '''
 import math
 
-class Units():
+class Units(object):
     def gravity():
         return 32.2
 
 class Orifice():
+class Orifice(object):
     """ 
     Init_Property:  Units
     
@@ -143,7 +144,23 @@ class Orifice():
                 return 0
             else:
                 return (water_surface_elevation - self.stage_elevation)
-    
+
+
+
+class Notch(object):
+    def __init__(self, diameter, elevation, orientation_vertical = None, orientation_horizontal = True):
+        '''
+        This object is set in initialize in the horizontal orientation with a coef_of_discharge == 0.62
+        and the result is EXTREMELY close to the WWHM SSD tables that can be generated 
+        '''
+        self._diameter_inches = diameter
+        self._diameter_feet = self._diameter_inches / 12
+        self._elevation = elevation
+        self.orientation_horizontal = None
+        self.orientation_vertical = None
+
+
+
 def stage_intervals(live_storage_depth, intervals_per_foot = 12, intervals_total = None):
     intervals = live_storage_depth * intervals_per_foot
     delta = live_storage_depth / intervals
