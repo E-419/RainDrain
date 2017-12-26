@@ -8,6 +8,7 @@ import math
 
 
 import K_values
+import Bulletin_17B
 # import scipy
 # import scipy.stats as st
 # from scipy.stats import pearson3
@@ -17,39 +18,12 @@ import K_values
 
 
 
-
-
 def mean_squared_error(skew, N):
-	'''
-	Mean Squared Error, Eqn #6 (pg 13) of Bulletin #17B
-		Input: skew value
-	   return: MSE_skew
-	'''
-
-	A = None
-	B = None
-	abs_skew = abs(skew)
-	
-	# Set A
-	if abs_skew <= 0.90:
-		A = -0.33 + 0.08 * abs_skew
-	elif abs_skew > 0.90:
-		A = -0.52 + 0.30 * abs_skew
-
-	# Set B
-	if abs_skew <= 1.50:
-		B = 0.94 - 0.26 * abs_skew
-	elif abs_skew > 1.50:
-		B = 0.55
+	return Bulletin_17B.equation_6(skew, N)
 
 
-	# Compute Mean Squared Error via Eqn. 6 (pg 13) of #17B
-	MSE = 10**(A - B * math.log10(N/10))
 
-	if __name__ == '__main__':
-		print('A =', A, '\nB =', B, )
-		print('MSE =', MSE, '\n')
-	return MSE
+
 
 
 
@@ -114,7 +88,7 @@ class log_struct(object):
 
 
 	def set_skew_MSE(self):
-		self.skew_MSE = mean_squared_error(self.skew, self.len)
+		self.skew_MSE = Bulletin_17B.equation_6(self.skew, self.len)
 
 	def set_outliers(self):
 		K_N = K_values.outlier_10_percent(self.len)
@@ -333,7 +307,7 @@ if __name__ == '__main__':
 		'\nWeighted Skew:',	fishkill_creek.log.skew_weighted,
 		'\nK_Val:', K_values.K(weighted_skew = fishkill_creek.log.skew_weighted, return_period = 1/0.9999),
 		'\nK_Val:', K_values.K(weighted_skew = fishkill_creek.log.skew_weighted, return_period = 5),
-		'\nPeaks {}-yr:'.format(2), fishkill_creek.freq[2]
+		'\nPeaks {}-yr:'.format(100), fishkill_creek.freq[100]
 		# '\nK_Val:', K_values.for_weighted_skew_and_return_period(fishkill_creek.log.skew_weighted, 100)
 	)
 

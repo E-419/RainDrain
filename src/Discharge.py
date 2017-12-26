@@ -12,17 +12,25 @@ Goals:
 '''
 import math
 
+import Settings, Base
+
+
 class Units(object):
 	def gravity():
 		return 32.2
 
+# class Discharge(RDObject):
+# 	'''
 
-class Orifice(object):
+# 	'''
+# 	def __init__(self, )
+
+class Orifice(Base.RDCircle):
 	""" 
 	Init_Property:  Units
 	
-	diameter:	   Inches
-	elevation:	  Feet
+	diameter:      Inches
+	elevation:    Feet
 	
 	stage/water_surface_elevation is changing all the 
 	time so it's passed into every function for clarity
@@ -41,9 +49,10 @@ class Orifice(object):
 		This object is set in initialize in the horizontal orientation with a coef_of_discharge == 0.62
 		and the result is EXTREMELY close to the WWHM SSD tables that can be generated 
 		'''
-		self._diameter_inches = diameter
-		self._diameter_feet = self._diameter_inches / 12
-		self._elevation = elevation
+		super().__init__(elevation_bottom = elevation, diameter_in = diameter)
+		# self._diameter_inches = diameter
+		# self._diameter_feet = self._diameter_inches / 12
+		# self._elevation = elevation
 		self.orientation_horizontal = None
 		self.orientation_vertical = None
 		self.set_orientation(orientation_horizontal)
@@ -53,16 +62,16 @@ class Orifice(object):
 		return 0.62 # WWHM's Value
 		# return 0.62354
 
-	def set_diameter(self, inches = None, feet = None):
-		if inches:
-			self._diameter_inches = inches
-			self._diameter_feet = inches / 12
-			return True
-		elif feet:
-			self._diameter_feet = feet
-			self._diameter_inches = feet * 12
-			return True
-		return False
+	# def set_diameter(self, inches = None, feet = None):
+	# 	if inches:
+	# 		self._diameter_inches = inches
+	# 		self._diameter_feet = inches / 12
+	# 		return True
+	# 	elif feet:
+	# 		self._diameter_feet = feet
+	# 		self._diameter_inches = feet * 12
+	# 		return True
+	# 	return False
 
 	def set_orientation(self, vertical = None, horzontal = None):
 		if vertical:
@@ -77,15 +86,15 @@ class Orifice(object):
 
 	@property
 	def stage_elevation(self):
-		return self._elevation
+		return self.start_stage
 	
-	@property
-	def diameter_feet(self):
-		return self._diameter_feet
+	# @property
+	# def diameter_feet(self):
+	# 	return self._diameter_feet
 	
-	@property
-	def radius_feet(self):
-		return self._diameter_feet / 2
+	# @property
+	# def radius_feet(self):
+	# 	return self._diameter_feet / 2
 	
 	
 	def discharge(self, water_surface_elevation = 0):
@@ -93,7 +102,23 @@ class Orifice(object):
 			return 0
 		stage = water_surface_elevation
 		return Orifice.coef_of_discharge() * self.submerged_area(stage) * math.sqrt(self.head(stage) * 2 * Units.gravity())
+	
+	def set_diameter_for_head_and_discharge(self, head, discharge):
+		# Back solve orifice equation to yield a diameter for a given head and discharge
+		# Q = discharge
+		# h = head
+		# C = Orifice.coef_of_discharge()
+		# g = Units.gravity
+		#
+		# A = pi * d^2 / 4
+		# 
+		# Q = C * A * sqrt(2 * g * h)
+		# 
+		# d = sqrt( (4 * Q) / (pi * C * sqrt(2 * g * h)))
+		diam = math.sqrt((4 * discharge)/(math.pi * Orifice.coef_of_discharge() * math.sqrt(2 * Units.gravity() * head)))
 		
+		self.set_diameter(feet = diam)
+		return self._diameter_inches
 	
 	def submerged_area(self, water_surface_elevation):
 		stage = water_surface_elevation
@@ -123,7 +148,7 @@ class Orifice(object):
 
 		if stage < self.radius_feet + self.stage_elevation:
 			angle = 2 * math.acos( (self.radius_feet - orifice_head)/(self.radius_feet))
-		else:	
+		else:   
 			unsubmerged_orifice_height = self.diameter_feet - (orifice_head)
 			angle = 2 * math.acos( (self.radius_feet - unsubmerged_orifice_height)/(self.radius_feet))
 
@@ -161,13 +186,15 @@ class Notch(object):
 
 
 
+
+
 def stage_intervals(live_storage_depth, intervals_per_foot = 12, intervals_total = None):
 	intervals = live_storage_depth * intervals_per_foot
 	delta = live_storage_depth / intervals
 	stage_i = list()
 	for stage in range(0, int(intervals) + 1):
 		stage_i.append(delta * stage)
-	return stage_i	
+	return stage_i  
 
 if __name__ == "__main__":
 	o1 = Orifice(diameter = 8, elevation = 1)
@@ -185,8 +212,14 @@ if __name__ == "__main__":
 		dis += o3.discharge(stage)
 		print(round(stage, 3), 'ft', round(dis, 5) , 'cfs')
 
+	o1_test = Orifice(diameter = 0.453, elevation = 0.00)
+	o2_test = Orifice(diameter = 0.483, elevation = 4.01)
+	o3_test = Orifice(diameter = 1.024, elevation = 5.11)
+	print('\n\no1_test:',o1_test.discharge(6.0))
+	print('\n\no2_test:',o2_test.discharge(6.0))
+	print('\n\no3_test:',o3_test.discharge(6.0))
 
-
+	print(o1.set_diameter_for_head_and_discharge(1, 0.53))
 
 
 

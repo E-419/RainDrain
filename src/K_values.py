@@ -197,11 +197,22 @@ def for_weighted_skew_and_return_period(skew, return_period):
 	return float(kvd[probability][skew])
 
 def K(weighted_skew = None, return_period = None):
+	'''
+	alpha == 4 / skew**2
+	beta == 1?
+
+	GammaVariate == (GammaInvers(alpha, beta) - mean) / std_dev
+
+	'''
 	return for_weighted_skew_and_return_period(weighted_skew, return_period)
 
 
 
 if __name__ == "__main__":
+	# import sympy
+	from sympy.stats import GammaInverse, density, cdf, E, variance
+	from sympy import symbols
+	gvar, alpha, beta = symbols('gvar, alpha, beta')
 	print(_outlier_K_values[148])
 
 
